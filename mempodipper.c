@@ -102,7 +102,9 @@ unsigned long ptrace_address()
 {
 	int fd[2];
 	printf("[+] Creating ptrace pipe.\n");
-	pipe2(fd, O_NONBLOCK);
+	pipe(fd);
+	fcntl(fd[0], F_SETFL, O_NONBLOCK);
+
 	printf("[+] Forking ptrace child.\n");
 	int child = fork();
 	if (child) {
